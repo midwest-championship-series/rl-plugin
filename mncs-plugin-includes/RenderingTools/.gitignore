@@ -1,7 +1,0 @@
-#Directories
-.vs/
-UPLOAD/
-x64/
-
-#Files
-*.user
