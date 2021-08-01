@@ -11,7 +11,7 @@ using nlohmann::json;
 class CVarManagerWrapper;
 class SOS;
 
-//#define USE_TLS
+#define USE_TLS
 
 #ifdef USE_TLS
 #pragma comment(lib, "sioclient_tls.lib")

@@ -9,10 +9,10 @@ using nlohmann::json;
 WebsocketManager::WebsocketManager(std::shared_ptr<CVarManagerWrapper> cvarManager, std::shared_ptr<GameWrapper> gameWrapper)
     : cvarManager(cvarManager), gameWrapper(gameWrapper) {
 
-    cvarServer = std::make_shared<std::string>("http://localhost:5555");
+    cvarServer = std::make_shared<std::string>("https://rl-relay.herokuapp.com");
     cvarToken = std::make_shared<std::string>("wTJ2bAQW9R6M89NTSaqUsAvQ");
 
-    CVarWrapper server = cvarManager->registerCvar("sos_server", "http://localhost:5555", "Server to send events to", true);
+    CVarWrapper server = cvarManager->registerCvar("sos_server", "https://rl-relay.herokuapp.com", "Server to send events to", true);
     server.bindTo(cvarServer);
     server.addOnValueChanged([cvarManager, gameWrapper, this](std::string s, CVarWrapper c) {
         // Stop websocket client then connect to new server
@@ -30,19 +30,17 @@ WebsocketManager::WebsocketManager(std::shared_ptr<CVarManagerWrapper> cvarManag
             cvarManager->log("[SOS-SocketIO] Attempting to reconnect to '" + c.getStringValue() + "'...");
         });
         h.set_fail_listener([cvarManager]() {
-            cvarManager->log("[SOS-SocketIO] Failed to connect.");
+            cvarManager->log("[SOS-SocketIO] Failed to connect. Try reconnecting by resetting sos_server.");
         });
         h.set_open_listener([gameWrapper, cvarManager, this]() {
             gameWrapper->SetTimeout([gameWrapper, cvarManager, this](GameWrapper*) {
-                cvarManager->log("[SOS-SocketIO] emitting register");
                 h.socket()->emit("mncs_register");
-                cvarManager->log("[SOS-SocketIO] Connected! Attempting to log in...");
+                cvarManager->log("[SOS-SocketIO] Attempting to log in...");
                 h.socket()->emit("login", cvarManager->getCvar("sos_token").getStringValue(), [cvarManager](const sio::message::list& list) {
-                    cvarManager->log("[SOS-SocketIO] Got callback");
                     if (list[0]->get_string() == "good")
-                        cvarManager->log("[SOS-SocketIO] Login successful!");
+                        cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
                     else
-                        cvarManager->log("[SOS-SocketIO] Login failed!");
+                        cvarManager->log("[SOS-SocketIO] Login failed! Try reconnecting by resetting sos_server.");
                 });
             }, .3F);
         });
@@ -74,19 +72,17 @@ void WebsocketManager::StartClient()
         cvarManager->log("[SOS-SocketIO] Attempting to reconnect to '" + *cvarServer + "'...");
     });
     h.set_fail_listener([&]() {
-        cvarManager->log("[SOS-SocketIO] Failed to connect to '" + *cvarServer + "'.");
+        cvarManager->log("[SOS-SocketIO] Failed to connect to '" + *cvarServer + "'. Try reconnecting by resetting sos_server.");
     });
     h.set_open_listener([&]() {
         gameWrapper->SetTimeout([&](GameWrapper*) {
-            cvarManager->log("[SOS-SocketIO] emitting register");
             h.socket()->emit("mncs_register");
-            cvarManager->log("[SOS-SocketIO] Connected to " + *cvarServer + "! Attempting to log in...");
+            cvarManager->log("[SOS-SocketIO] Attempting to log in...");
             h.socket()->emit("login", *cvarToken, [&](const sio::message::list& list) {
-                cvarManager->log("[SOS-SocketIO] Got callback");
                 if (list[0]->get_string() == "good")
-                    cvarManager->log("[SOS-SocketIO] Login successful!");
+                    cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
                 else
-                    cvarManager->log("[SOS-SocketIO] Login failed!");
+                    cvarManager->log("[SOS-SocketIO] Login failed! Try reconnecting by resetting sos_server.");
             });
         }, .3F);
     });
