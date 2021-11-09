@@ -419,6 +419,18 @@ void SOS::GetStatEventInfo(ServerWrapper caller, void* params)
     auto label = statEvent.GetLabel();
     auto eventStr = label.ToString();
     auto eventName = statEvent.GetEventName();
+    
+    for (int i = 0; i < addrs.size(); i++) {
+        DummyStatEventContainer tmp = addrs.at(i);
+        if (tmp.Receiver == tArgs->Receiver && tmp.StatEvent == tArgs->StatEvent && tmp.Victim == tArgs->Victim) {
+            // Don't send a duplicate stat event
+            return;
+        }
+    }
+    addrs.push_back(*tArgs);
+    gameWrapper->SetTimeout([&, tArgs](GameWrapper*) {
+        addrs.erase(std::remove(addrs.begin(), addrs.end(), *tArgs), addrs.end());
+    }, .1f);
 
     //Receiver info
     auto receiver = PriWrapper(tArgs->Receiver);

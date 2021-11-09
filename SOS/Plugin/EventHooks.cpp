@@ -150,7 +150,6 @@ void SOS::HookMatchCreated()
     ServerWrapper server = SOSUtils::GetCurrentGameState(gameWrapper);
     CurrentMatchGuid = server.GetMatchGUID();
     Clock->UpdateCurrentMatchGuid(CurrentMatchGuid);
-
     Clock->ResetClock();
     matchCreated = true;
     DemolitionCountMap.clear();
@@ -289,7 +288,9 @@ void SOS::HookMatchEnded()
     firstCountdownHit = false;
     isCurrentlySpectating = false;
     bPendingRestartFromKickoff = false;
-    Clock->ResetClock();
+    gameWrapper->SetTimeout([&, this](GameWrapper*) {
+        Clock->ResetClock();
+    }, 3);
 
     json winnerData;
     winnerData["match_guid"] = CurrentMatchGuid;

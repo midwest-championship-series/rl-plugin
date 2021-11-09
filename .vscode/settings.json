@@ -1,0 +1,15 @@
+{
+  "C_Cpp.default.includePath": [
+    "${env:APPDATA}/bakkesmod/bakkesmod/bakkesmodsdk/include",
+    "${workspaceFolder}/Libs/include",
+    "${workspaceFolder}/SOS",
+    "${workspaceFolder}/sos-plugin-includes/nlohmann-JSON",
+    "${workspaceFolder}/sos-plugin-includes/asio-1.12.2/include",
+    "${workspaceFolder}/sos-plugin-includes/RenderingTools",
+    "${workspaceFolder}/sos-plugin-includes/websocketpp-0.8.1",
+
+  ],
+  "files.associations": {
+    "functional": "cpp"
+  }
+}

@@ -9,13 +9,15 @@
     - Thanks to Martinn for the Stat Feed code (and inadvertently, demolitions)
 */
 
-BAKKESMOD_PLUGIN(SOS, "Simple Overlay System", SOS_VERSION, PLUGINTYPE_THREADED)
+BAKKESMOD_PLUGIN(SOS, "Simple Overlay System", SOS_VERSION, PERMISSION_ALL | PLUGINTYPE_THREADED)
 
 std::shared_ptr<CVarManagerWrapper> globalCvarManager;
 
 void SOS::onLoad()
 {
     globalCvarManager = cvarManager;
+
+    addrs = vector<DummyStatEventContainer>();
 
 #ifdef USE_TLS
     cvarManager->log("Loading SOS-SocketIO Plugin --- TLS ENABLED");
@@ -60,6 +62,7 @@ void SOS::onLoad()
     BallSpeed  = std::make_shared<BallSpeedManager>(gameWrapper);
     Clock      = std::make_shared<ClockManager>(gameWrapper, Websocket);
     Nameplates = std::make_shared<NameplatesManager>();
+    Replay = std::make_shared<ReplayManager>(cvarManager, gameWrapper, Websocket);
 
     //Run websocket server. Locks onLoad thread
     Websocket->StartClient();

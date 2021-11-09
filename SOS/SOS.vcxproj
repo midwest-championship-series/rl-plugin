@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release-Nameplates|x64">
@@ -49,6 +49,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Nameplates|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -56,7 +57,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -73,6 +73,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(BakkesModPath)\bakkesmodsdk\lib;$(SolutionDir)Libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Uploader.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Nameplates|x64'">
@@ -121,6 +122,8 @@
     <ClInclude Include="Classes\BallSpeedManager.h" />
     <ClInclude Include="Classes\ClockManager.h" />
     <ClInclude Include="Classes\NameplatesManager.h" />
+    <ClInclude Include="Classes\ReplayManager.h" />
+    <ClInclude Include="Classes\Secrets.h" />
     <ClInclude Include="Classes\WebsocketManager.h" />
     <ClInclude Include="Plugin\MacrosStructsEnums.h" />
     <ClInclude Include="Plugin\SOS.h" />
@@ -148,6 +151,7 @@
     <ClCompile Include="Classes\BallSpeedManager.cpp" />
     <ClCompile Include="Classes\ClockManager.cpp" />
     <ClCompile Include="Classes\NameplatesManager.cpp" />
+    <ClCompile Include="Classes\ReplayManager.cpp" />
     <ClCompile Include="Classes\WebsocketManager.cpp" />
     <ClCompile Include="Plugin\DebugRenderer.cpp" />
     <ClCompile Include="Plugin\EventHooks.cpp" />

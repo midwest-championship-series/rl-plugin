@@ -32,6 +32,11 @@ struct DummyStatEventContainer
     uintptr_t Receiver;
     uintptr_t Victim;
     uintptr_t StatEvent;
+
+    bool operator ==(DummyStatEventContainer y)
+    {
+        return this->Receiver == y.Receiver && this->Victim == y.Victim && this->StatEvent == y.StatEvent;
+    }
 };
 
 struct BallHitGoalParams

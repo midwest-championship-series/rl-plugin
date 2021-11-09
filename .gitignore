@@ -2,3 +2,5 @@
 **package-lock.json
 **/x64
 **/.vs
+
+**/Secrets.h
