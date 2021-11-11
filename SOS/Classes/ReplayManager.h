@@ -24,6 +24,7 @@ using namespace std;
 class ReplayManager
 {
 public:
+
     ReplayManager(std::shared_ptr<CVarManagerWrapper> cvarManager, std::shared_ptr<GameWrapper> gameWrapper, std::shared_ptr<WebsocketManager> Websocket);
     void OnGameComplete(ServerWrapper caller, void* params, std::string eventName);
     void onUnload();

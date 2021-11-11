@@ -1,5 +1,4 @@
 #include "ReplayManager.h"
-#include "Secrets.h"
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "utils/io.h"
 
@@ -72,6 +71,15 @@ void Log(void* object, string message)
 	plugin->cvarManager->log(message);
 }
 
+void save(wstring filename, string data) {
+	ofstream file(filename, ios_base::trunc);
+	file << data << endl;
+	file.close();
+}
+
+// If the file is valid, loadLine will load the first line into *out.
+void loadLine(wstring filename, string* out);
+
 void BallchasingUploadComplete(void* object, bool result, string response)
 {
 	if (result == true) {
@@ -95,15 +103,19 @@ ReplayManager::ReplayManager(std::shared_ptr<CVarManagerWrapper> cvarManager, st
     : cvarManager(cvarManager), gameWrapper(gameWrapper), Websocket(Websocket) {
 
 	stringstream userAgentStream;
-	userAgentStream << "ReplayManager/1.0.0" << " BakkesModAPI/" << BAKKESMOD_PLUGIN_API_VERSION;
+	userAgentStream << "ReplayManager/1.0.1" << " BakkesModAPI/" << BAKKESMOD_PLUGIN_API_VERSION;
 	string userAgent = userAgentStream.str();
 
 	// Setup upload handlers
 	ballchasing = new Ballchasing(userAgent, &Log, &BallchasingUploadComplete, &BallchasingAuthTestComplete, this);
-	ballchasing->authKey = std::make_shared<std::string>(BALLCHASING_TOKEN);
-	ballchasing->visibility = std::make_shared<std::string>("unlisted");
 
-	//calculated = new Calculated(userAgent, &Log, &BallchasingUploadComplete, this);
+	string key = "";
+	loadLine(SOS_DATADIR + LR"(\sosio\ballchasing_key)", &key);
+	ballchasing->authKey = std::make_shared<std::string>(key);
+	cvarManager->registerCvar("sos_ballchasing_key", key, "Token for ballchasing authentication").bindTo(ballchasing->authKey);
+	
+	ballchasing->visibility = std::make_shared<std::string>("unlisted");
+	cvarManager->registerCvar("sos_ballchasing_visibility", "unlisted", "Default visibility to use when uploading replays to ballchasing").bindTo(ballchasing->visibility);
 
 	gameWrapper->HookEventWithCaller<ServerWrapper>(
 		"Function GameEvent_Soccar_TA.Active.StartRound",
@@ -130,6 +142,7 @@ ReplayManager::ReplayManager(std::shared_ptr<CVarManagerWrapper> cvarManager, st
 }
 
 void ReplayManager::onUnload() {
+	save(SOS_DATADIR + LR"(\sosio\ballchasing_key)", *ballchasing->authKey);
 	delete ballchasing;
 }
 

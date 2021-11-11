@@ -17,7 +17,7 @@ bool SOSUtils::ShouldRun(std::shared_ptr<GameWrapper> gameWrapper)
     ServerWrapper server = GetCurrentGameState(gameWrapper);
     if (server.IsNull())
     {
-        LOGC("server.IsNull(): (need false) true");
+        //globalCvarManager->log("server.IsNull(): (need false) true");
         return false;
     }
 
@@ -30,14 +30,14 @@ bool SOSUtils::ShouldRun(std::shared_ptr<GameWrapper> gameWrapper)
     //Check if player is spectating
     if (!gameWrapper->GetLocalCar().IsNull())
     {
-        LOGC("GetLocalCar().IsNull(): (need true) false");
+        //globalCvarManager->log("GetLocalCar().IsNull(): (need true) false");
         return false;
     }
 
     //Check if server playlist exists
     if (server.GetPlaylist().memory_address == NULL)
     {
-        LOGC("server.GetPlaylist().memory_address == NULL: (need false) true");
+        //globalCvarManager->log("server.GetPlaylist().memory_address == NULL: (need false) true");
         return false;
     }
 

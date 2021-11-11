@@ -220,7 +220,7 @@ void SOS::GetGameTimeInfo(json& state, ServerWrapper server)
         state["game"]["elapsed"] = gameWrapper->GetGameEventAsReplay().GetReplayTimeElapsed();
     }
 
-    LOGC(std::to_string(OutputTime));
+    cvarManager->log(std::to_string(OutputTime));
 }
 
 void SOS::GetBallInfo(json& state, ServerWrapper server)
@@ -419,18 +419,21 @@ void SOS::GetStatEventInfo(ServerWrapper caller, void* params)
     auto label = statEvent.GetLabel();
     auto eventStr = label.ToString();
     auto eventName = statEvent.GetEventName();
-    
-    for (int i = 0; i < addrs.size(); i++) {
-        DummyStatEventContainer tmp = addrs.at(i);
-        if (tmp.Receiver == tArgs->Receiver && tmp.StatEvent == tArgs->StatEvent && tmp.Victim == tArgs->Victim) {
-            // Don't send a duplicate stat event
-            return;
+
+    static const std::vector<int> SafePlaylists = { 24 };
+    if (SOSUtils::IsSafeMode(caller.GetPlaylist().GetPlaylistId(), SafePlaylists)) {
+        for (int i = 0; i < addrs.size(); i++) {
+            DummyStatEventContainer tmp = addrs.at(i);
+                if (tmp.Receiver == tArgs->Receiver && tmp.StatEvent == tArgs->StatEvent && tmp.Victim == tArgs->Victim) {
+                    // Don't send a duplicate stat event
+                    return;
+                }
         }
+        addrs.push_back(*tArgs);
+            gameWrapper->SetTimeout([&, tArgs](GameWrapper*) {
+            addrs.erase(std::remove(addrs.begin(), addrs.end(), *tArgs), addrs.end());
+                }, .1f);
     }
-    addrs.push_back(*tArgs);
-    gameWrapper->SetTimeout([&, tArgs](GameWrapper*) {
-        addrs.erase(std::remove(addrs.begin(), addrs.end(), *tArgs), addrs.end());
-    }, .1f);
 
     //Receiver info
     auto receiver = PriWrapper(tArgs->Receiver);

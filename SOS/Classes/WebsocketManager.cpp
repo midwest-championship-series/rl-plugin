@@ -1,80 +1,130 @@
 #include "WebsocketManager.h"
 #include "utils/parser.h"
 #include "../Plugin/SOSUtils.h"
+#include <ctime>
 
 using nlohmann::json;
 
 // PUBLIC FUNCTIONS //
 WebsocketManager::WebsocketManager(std::shared_ptr<CVarManagerWrapper> cvarManager, std::shared_ptr<GameWrapper> gameWrapper)
     : cvarManager(cvarManager), gameWrapper(gameWrapper) {
+
 #ifdef PREFILL
     server = std::make_shared<std::string>(RELAY_SERVER);
     token = std::make_shared<std::string>(RELAY_PASSWORD);
     CVarWrapper cserver = cvarManager->registerCvar("sos_server", RELAY_SERVER, "Server to send events to", true);
     cvarManager->registerCvar("sos_token", RELAY_PASSWORD, "Token for authentication").bindTo(token);
 #else
-    server = std::make_shared<std::string>("");
-    token = std::make_shared<std::string>("");
-    CVarWrapper cserver = cvarManager->registerCvar("sos_server", "", "Server to send events to", true);
-    cvarManager->registerCvar("sos_token", "", "Token for authentication").bindTo(token);
+    string plServ = getServer();
+    string plToken = getToken();
+    server = std::make_shared<std::string>(plServ);
+    token = std::make_shared<std::string>(plToken);
+    CVarWrapper cserver = cvarManager->registerCvar("sos_server", plServ, "Server to send events to", true);
+    cvarManager->registerCvar("sos_token", plToken, "Token for authentication").bindTo(token);
 #endif
-
     cserver.bindTo(server);
-    cserver.addOnValueChanged([cvarManager, gameWrapper, this](std::string s, CVarWrapper c) {
-        // Stop websocket client then connect to new server
-        if (h.opened()) {
-            cvarManager->log("[SOS-SocketIO] Closing previous connection");
-            h.sync_close();
-        }
-        cvarManager->log("[SOS-SocketIO] new server: " + c.getStringValue());
-        h.clear_con_listeners();
-        h.clear_socket_listeners();
-        h.set_reconnect_delay(1000);
-        h.set_reconnect_delay_max(1000);
-        h.set_reconnect_attempts(0);
-        h.set_reconnecting_listener([cvarManager, &c]() {
-            cvarManager->log("[SOS-SocketIO] Attempting to reconnect to '" + c.getStringValue() + "'...");
-        });
-        h.set_fail_listener([cvarManager]() {
-            cvarManager->log("[SOS-SocketIO] Failed to connect. Try reconnecting by resetting sos_server.");
-        });
-        h.set_open_listener([&c, gameWrapper, cvarManager, this]() {
-            gameWrapper->SetTimeout([gameWrapper, cvarManager, this](GameWrapper*) {
-                h.socket()->emit("mncs_register");
-                cvarManager->log("[SOS-SocketIO] Attempting to log in...");
-                h.socket()->emit("login", cvarManager->getCvar("sos_token").getStringValue(), [&](const sio::message::list& list) {
-                    if (list[0]->get_string() == "good") {
-                        cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
-                        CheckKeepalive();
-                    }
-                    else
-                        cvarManager->log("[SOS-SocketIO] Login failed! Try reconnecting by resetting sos_server.");
-                });
-            }, .3F);
-        });
-        h.set_close_listener([&](int const& reason) {
-            cvarManager->log("[SOS-SocketIO] Socket closed.");
-        });
-        cvarManager->log("[SOS-SocketIO] Attempting to connect to " + c.getStringValue());
-        h.connect(c.getStringValue());
-        curServer = c.getStringValue();
-    });
 
     cvarManager->setBind("F1", "sos_connect");
     cvarManager->registerNotifier("sos_connect", [&](std::vector<std::string> args) {
         StartPrompt();
     }, "Starts connection process to relay.", PERMISSION_ALL);
+    gameWrapper->Execute([&](GameWrapper*) {
+        StartPrompt();
+    });
+}
+
+// If the file is valid, loadLine will load the first line into *out.
+void loadLine(wstring filename, string* out) {
+    ifstream in(filename);
+    if (in.is_open()) {
+        string line;
+        getline(in, line);
+        if (line.length() > 0) {
+            *out = line;
+        }
+        in.close();
+    }
+}
+
+string WebsocketManager::getServer() {
+    string server = "";
+    loadLine(SOS_DATADIR + LR"(\sosio\server)", &server);
+    return server;
+}
+
+string WebsocketManager::getToken() {
+    string token = "";
+    loadLine(SOS_DATADIR + LR"(\sosio\token)", &token);
+    return token;
+}
+
+void WebsocketManager::setServer(string server) {
+    ofstream file(SOS_DATADIR + LR"(\sosio\server)", ios_base::trunc);
+    file << server << endl;
+    file.close();
+}
+
+void WebsocketManager::setToken(string token) {
+    ofstream file(SOS_DATADIR + LR"(\sosio\token)", ios_base::trunc);
+    file << token << endl;
+    file.close();
+}
+
+void WebsocketManager::AttemptLogin() {
+    TextInputModalWrapper tokenModal = gameWrapper->CreateTextInputModal("SOSIO");
+    tokenModal.SetTextInput(getToken(), 32, true, [&](std::string iToken, bool canceled) {
+
+        if (canceled) {
+            if (h.opened())
+                h.socket()->close();
+            return;
+        }
+
+        cvarManager->getCvar("sos_token").setValue(iToken);
+        cvarManager->log("[SOS-SocketIO] Attempting to log in...");
+        LOG("Logging in to SIO");
+        h.socket()->emit("login", iToken, [&](const sio::message::list& list) {
+            if (list[0]->get_string() == "good") {
+                LOG("Logged in");
+                gameWrapper->SetTimeout([&](GameWrapper* gw) {
+                    ModalWrapper successModal = gw->CreateModal("SOSIO");
+                    successModal.SetBody("Connected!");
+                    successModal.SetIcon("gfx_shared.Icon_ConnectionStrength4");
+                    successModal.AddButton("OK", true);
+                    successModal.ShowModal();
+                }, .0F);
+                cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
+                gameWrapper->Execute([&](GameWrapper* gw) {
+                    LOG("Setting server");
+                    setServer(curServer);
+                    string token = cvarManager->getCvar("sos_token").getStringValue();
+                    LOG("Setting token in AttemptLogin to " + token);
+                    setToken(token);
+                    LOG("Done");
+                    gw->Toast("SOSIO", "Websocket connected");
+                });
+            }
+            else {
+                gameWrapper->SetTimeout([&](GameWrapper*) {
+                    AttemptLogin();
+                }, .0F);
+                LOG("Login failed");
+                cvarManager->log("[SOS-SocketIO] Login failed!");
+            }
+            });
+        });
+    tokenModal.SetBody("Incorrect! Enter your auth token:");
+    tokenModal.ShowModal();
 }
 
 void WebsocketManager::StartPrompt() {
+    // Server Address -> Connect -> Password -> Save?
+
+
     cvarManager->log("Opening modals.");
-    TextInputModalWrapper server = gameWrapper->CreateTextInputModal("BROADCAST");
-    server.SetTextInput("", 50, false, [&](std::string input, bool canceled) {
+    TextInputModalWrapper server = gameWrapper->CreateTextInputModal("SOSIO");
+    server.SetTextInput(getServer(), 50, false, [&](std::string input, bool canceled) {
         if (!canceled) {
-            ModalWrapper connectingModal = gameWrapper->CreateModal("BROADCAST");
-            connectingModal.SetBody("Connecting...");
-            connectingModal.SetIcon("Icon_Spinner");
-            connectingModal.ShowModal();
             if (h.opened()) {
                 cvarManager->log("[SOS-SocketIO] Closing previous connection");
                 h.sync_close();
@@ -88,35 +138,101 @@ void WebsocketManager::StartPrompt() {
             h.set_reconnecting_listener([&, input]() {
                 cvarManager->log("[SOS-SocketIO] Attempting to reconnect to '" + input + "'...");
             });
-            h.set_fail_listener([&, connectingModal]() {
-                ModalWrapper failModal = gameWrapper->CreateModal("BROADCAST");
-                failModal.SetBody("Failed to connect.");
-                failModal.SetIcon("Icon_Disconnected");
-                failModal.AddButton("OK", true);
-                failModal.ShowModal();
+            h.set_fail_listener([&]() {
+                LOG("Socket failed");
+                gameWrapper->SetTimeout([&](GameWrapper*) {
+                    ModalWrapper failModal = gameWrapper->CreateModal("SOSIO");
+                    failModal.SetBody("Failed to connect.");
+                    failModal.SetIcon("gfx_shared.Icon_Disconnected");
+                    failModal.AddButton("OK", true);
+                    failModal.ShowModal();
+                }, .0F);
                 cvarManager->log("[SOS-SocketIO] Failed to connect. Try reconnecting by resetting sos_server.");
             });
             h.set_open_listener([&, input]() {
-                gameWrapper->SetTimeout([&](GameWrapper*) {
-                    h.socket()->emit("mncs_register");
-                    cvarManager->log("[SOS-SocketIO] Attempting to log in...");
-                    h.socket()->emit("login", cvarManager->getCvar("sos_token").getStringValue(), [&](const sio::message::list& list) {
-                        if (list[0]->get_string() == "good") {
-                            ModalWrapper successModal = gameWrapper->CreateModal("BROADCAST");
-                            successModal.SetBody("Connected!");
-                            successModal.SetIcon("Icon_ConnectionStrength4");
-                            successModal.AddButton("OK", true);
-                            successModal.ShowModal();
-                            cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
-                            CheckKeepalive();
-                        }
-                        else
-                            cvarManager->log("[SOS-SocketIO] Login failed! Try reconnecting by resetting sos_server.");
+                gameWrapper->SetTimeout([&](GameWrapper* gW) {
+                    LOG("Socket connected");
+
+                    // GET TOKEN FROM FILE OR GET FROM PROMPT
+                    string token = getToken();
+                    if (strlen(token.c_str()) <= 0) {
+                        TextInputModalWrapper tokenModal = gW->CreateTextInputModal("SOSIO");
+                        tokenModal.SetTextInput("", 32, true, [&](std::string iToken, bool canceled) {
+                            if (canceled) {
+                                if (h.opened())
+                                    h.socket()->close();
+                                return;
+                            }
+                            cvarManager->getCvar("sos_token").setValue(iToken);
+                            cvarManager->log("[SOS-SocketIO] Attempting to log in...");
+                            LOG("Logging in to SIO");
+                            h.socket()->emit("login", iToken, [&](const sio::message::list& list) {
+                                if (list[0]->get_string() == "good") {
+                                    LOG("Logged in");
+                                    gameWrapper->SetTimeout([&](GameWrapper* gw) {
+                                        ModalWrapper successModal = gw->CreateModal("SOSIO");
+                                        successModal.SetBody("Connected!");
+                                        successModal.SetIcon("gfx_shared.Icon_ConnectionStrength4");
+                                        successModal.AddButton("OK", true);
+                                        successModal.ShowModal();
+                                    }, .0F);
+                                    gameWrapper->Execute([&](GameWrapper* gw) {
+                                        LOG("Setting server");
+                                        setServer(curServer);
+                                        string token = cvarManager->getCvar("sos_token").getStringValue();
+                                        LOG("Setting token in AttemptLogin to " + token);
+                                        setToken(token);
+                                        LOG("Done");
+                                        gw->Toast("SOSIO", "Websocket connected");
+                                    });
+                                    cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
+                                }
+                                else {
+                                    gameWrapper->SetTimeout([&](GameWrapper*) {
+                                        AttemptLogin();
+                                    }, .0F);
+                                    LOG("Login failed");
+                                    cvarManager->log("[SOS-SocketIO] Login failed!");
+                                }
+                            });
                         });
-                    }, .3F);
-                });
+                        tokenModal.SetBody("Enter your auth token:");
+                        tokenModal.ShowModal();
+                    }
+                    else {
+                        LOG("Logging in to SIO with prefilled token");
+                        cvarManager->getCvar("sos_token").setValue(token);
+                        cvarManager->log("[SOS-SocketIO] Attempting to log in...");
+                        h.socket()->emit("login", token, [&](const sio::message::list& list) {
+                            if (list[0]->get_string() == "good") {
+                                LOG("Logged in");
+                                gameWrapper->SetTimeout([&](GameWrapper* gw) {
+                                    ModalWrapper successModal = gameWrapper->CreateModal("SOSIO");
+                                    successModal.SetBody("Connected!");
+                                    successModal.SetIcon("gfx_shared.Icon_ConnectionStrength4");
+                                    successModal.AddButton("OK", true);
+                                    successModal.ShowModal();
+                                    gw->Toast("SOSIO", "Websocket connected");
+                                }, .0F);
+                                cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
+                            }
+                            else {
+                                LOG("Login failed");
+                                cvarManager->log("[SOS-SocketIO] Login failed!");
+                                gameWrapper->SetTimeout([&](GameWrapper*) {
+                                    AttemptLogin();
+                                }, .0F);
+                            }
+                        });
+                    }
+                }, .3F);
+            });
             h.set_close_listener([&](int const& reason) {
+                LOG("Socket closed");
                 cvarManager->log("[SOS-SocketIO] Socket closed.");
+                gameWrapper->Execute([&](GameWrapper* gw) {
+                    gw->Toast("SOSIO", "Websocket disconnected");
+                });
             });
             cvarManager->log("[SOS-SocketIO] Attempting to connect to " + input);
             h.connect(input);
@@ -142,78 +258,21 @@ void WebsocketManager::SendEvent(std::string eventName, const json &jsawn)
     }
 }
 
-void WebsocketManager::CheckKeepalive() {
-    gameWrapper->SetTimeout([&](GameWrapper*) {
-        if (h.opened()) {
-            WebsocketManager::SendKeepalive(curServer);
-            WebsocketManager::CheckKeepalive();
-        }
-    }, 1.0F);
-}
-
-void WebsocketManager::StartClient()
-{
-    cvarManager->log("[SOS-SocketIO] Starting Client (" + *server + ")");
-    h.set_reconnect_delay(1000);
-    h.set_reconnect_delay_max(1000);
-    h.set_reconnect_attempts(3);
-    h.set_reconnecting_listener([&]() {
-        cvarManager->log("[SOS-SocketIO] Attempting to reconnect to '" + *server + "'...");
-    });
-    h.set_fail_listener([&]() {
-        cvarManager->log("[SOS-SocketIO] Failed to connect to '" + *server + "'. Try reconnecting by resetting sos_server.");
-    });
-    h.set_open_listener([&]() {
-        gameWrapper->SetTimeout([&](GameWrapper*) {
-            h.socket()->emit("register");
-            cvarManager->log("[SOS-SocketIO] Attempting to log in...");
-            h.socket()->emit("login", *token, [&](const sio::message::list& list) {
-                if (list[0]->get_string() == "good") {
-                    cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
-                    CheckKeepalive();
-                }
-                else
-                    cvarManager->log("[SOS-SocketIO] Login failed! Try reconnecting by resetting sos_server.");
-            });
-        }, .3F);
-    });
-    h.set_close_listener([&](int const& reason) {
-        // 0: normal, 1: drop
-        cvarManager->log("[SOS-SocketIO] Socket closed.");
-    });
-    h.connect(*server);
-    curServer = *server;
-}
-
 void WebsocketManager::StopClient() {
-    h.close();
+    if(h.opened())
+        h.close();
 }
 
-void Get(std::string server) {
-    try
-    {
-        curlpp::Cleanup cleaner;
-        curlpp::Easy request;
+void WebsocketManager::log(string text, bool console) {
+    ofstream file(SOS_DATADIR + LR"(\sosio\log.txt)", ios_base::app);
 
-        request.setOpt(new curlpp::options::Verbose(true));
-        std::list<std::string> header;
-        header.push_back("Expect: ");
-        request.setOpt(new curlpp::options::HttpHeader(header));
-        request.setOpt(new curlpp::options::Url(server));
-        request.setOpt(new curlpp::options::SslVerifyPeer(false));
+    time_t now = time(0);
+    tm* ltm = localtime(&now);
+    string datestring = to_string(1 + ltm->tm_mon) + "/" + to_string(ltm->tm_mday) + "/" + to_string(1900 + ltm->tm_year) + " " + to_string(ltm->tm_hour) + ":" + to_string(ltm->tm_min) + ":" + to_string(ltm->tm_sec);
 
-        request.perform();
-
-        long res = curlpp::infos::ResponseCode::get(request); 
+    file << "["+ datestring + "] [PLUGIN] " + text << endl;
+    file.close();
+    if (console) {
+        cvarManager->log(text);
     }
-    catch (curlpp::LogicError& e) { }
-    catch (curlpp::RuntimeError& e) { }
-    catch (...) { }
-}
-
-void WebsocketManager::SendKeepalive(std::string server) {
-    std::thread http([server]() {
-        Get(server);
-    });
-    http.detach();
 }

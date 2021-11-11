@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Plugin Code">
+      <UniqueIdentifier>{d12b4e4f-89da-4843-b3f8-37d1af6a6e33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extra Files">
+      <UniqueIdentifier>{5eb95e02-e513-42f5-8a62-b9a1c3878cb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Plugin Code\Main">
+      <UniqueIdentifier>{aaf0ba0e-8d71-4615-992f-d36e53f09991}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Plugin\Updater.cpp">
+      <Filter>Plugin Code\Main</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Plugin\Updater.h">
+      <Filter>Plugin Code\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Plugin\json.hpp">
+      <Filter>Plugin Code\Main</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

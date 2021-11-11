@@ -145,7 +145,7 @@ void SOS::HookMatchCreated()
 {
     // Called by HookInitTeams //
 
-    LOGC(" -------------- MATCH CREATED -------------- ");
+    cvarManager->log(" -------------- MATCH CREATED -------------- ");
 
     ServerWrapper server = SOSUtils::GetCurrentGameState(gameWrapper);
     CurrentMatchGuid = server.GetMatchGUID();
@@ -161,7 +161,7 @@ void SOS::HookMatchCreated()
 
 void SOS::HookReplayCreated()
 {
-    LOGC(" -------------- REPLAY CREATED -------------- ");
+    cvarManager->log(" -------------- REPLAY CREATED -------------- ");
 
     Clock->ResetClock();
     matchCreated = true;
@@ -238,7 +238,7 @@ void SOS::HookBallExplode()
     //Notify that the goal replay will end soon
     if(bInGoalReplay)
     {
-        LOGC("Sending ReplayWillEnd Event");
+        cvarManager->log("Sending ReplayWillEnd Event");
 
         json event;
         event["match_guid"] = CurrentMatchGuid;

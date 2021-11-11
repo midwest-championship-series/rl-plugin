@@ -2,10 +2,7 @@
 
 // Project Definitions
 
-#define MNCS
-//#define UMN
-#define PREFILL
-//#define USE_TLS
+#define USE_TLS
 
 // Dependencies
 #define CURLPP_STATICLIB
@@ -60,28 +57,38 @@ class SOS;
 #include "Secrets.h"
 #endif
 
+#define LOG(text) \
+    log(text, false)
+
+#define LOGC(text) \
+    log(text, true)
+
 class WebsocketManager
 {
 public:
     WebsocketManager(std::shared_ptr<CVarManagerWrapper> cvarManager, std::shared_ptr<GameWrapper> gameWrapper);
 
-    void StartClient();
     void StopClient();
-    void SendKeepalive(std::string server);
     
     void SendEvent(std::string eventName, const json& jsawn);
     void StartPrompt();
 
+    void log(std::string text, bool console = false);
 private:
     WebsocketManager() = delete; // No default constructor
 
     std::string curServer;
-
-    void CheckKeepalive();
 
     std::shared_ptr<std::string> server;
     std::shared_ptr<std::string> token;
     std::shared_ptr<GameWrapper> gameWrapper;
     std::shared_ptr<CVarManagerWrapper> cvarManager;
     sio::client h;
+
+    std::string getServer();
+    std::string getToken();
+    void setServer(std::string server);
+    void setToken(std::string token);
+
+    void AttemptLogin();
 };

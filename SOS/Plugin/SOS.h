@@ -13,6 +13,8 @@
 class ReplayManager;
 using json = nlohmann::json;
 
+#define SOS_DATADIR gameWrapper->GetDataFolderW()
+
 // SOS CLASS
 class SOS : public BakkesMod::Plugin::BakkesModPlugin
 {
