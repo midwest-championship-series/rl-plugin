@@ -1,0 +1,10 @@
+{
+  "name": "plugin",
+  "version": "1.0.0",
+  "repository": "git@github.com:mn-rocket-league/rl-plugin.git",
+  "author": "Benjamin Nylund <ben@nylund.us>",
+  "scripts": {
+    "build": "node build.js",
+    "install-tools": "node install.js"
+  }
+}

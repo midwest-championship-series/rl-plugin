@@ -154,6 +154,8 @@ void SOS::HookMatchCreated()
     matchCreated = true;
     DemolitionCountMap.clear();
 
+    //server.ChooseTeam(255, gameWrapper->GetPlayerController());
+
     json event;
     event["match_guid"] = CurrentMatchGuid;
     Websocket->SendEvent("game:match_created", event);
