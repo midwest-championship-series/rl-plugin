@@ -7,7 +7,7 @@ void SOS::HookAllEvents()
     using namespace std::placeholders;
 
     //UPDATE GAME STATE EVERY TICK
-    gameWrapper->RegisterDrawable(std::bind(&SOS::HookViewportTick, this, _1));
+    gameWrapper->HookEvent("Function Engine.GameViewportClient.Tick", std::bind(&SOS::HookViewportTick, this));
 
     //CLOCK EVENTS
     gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnGameTimeUpdated", std::bind(&SOS::HookOnTimeUpdated, this));
@@ -33,12 +33,11 @@ void SOS::HookAllEvents()
 
 
 // GAME STATE //
-void SOS::HookViewportTick(CanvasWrapper canvas)
+void SOS::HookViewportTick()
 {
     if(!*cvarEnabled || !SOSUtils::ShouldRun(gameWrapper)) { return; }
 
-    UpdateGameState(canvas);
-    DebugRender(canvas);
+    UpdateGameState();
 }
 
 

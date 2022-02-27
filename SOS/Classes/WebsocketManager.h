@@ -79,6 +79,7 @@ private:
 
     std::string curServer;
 
+    std::shared_ptr<bool> loggedIn;
     std::shared_ptr<std::string> server;
     std::shared_ptr<std::string> token;
     std::shared_ptr<GameWrapper> gameWrapper;
@@ -89,6 +90,7 @@ private:
     std::string getToken();
     void setServer(std::string server);
     void setToken(std::string token);
+    void Render(CanvasWrapper canvas);
 
     void AttemptLogin();
 };

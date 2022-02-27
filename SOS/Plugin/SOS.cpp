@@ -9,7 +9,7 @@
     - Thanks to Martinn for the Stat Feed code (and inadvertently, demolitions)
 */
 
-BAKKESMOD_PLUGIN(SOS, "Simple Overlay System", SOS_VERSION, PERMISSION_ALL | PLUGINTYPE_THREADED)
+BAKKESMOD_PLUGIN(SOS, "Simple Overlay System", SOS_VERSION, PERMISSION_ALL | PLUGINTYPE_THREADED | PLUGINTYPE_THREADEDUNLOAD)
 
 std::shared_ptr<CVarManagerWrapper> globalCvarManager;
 
@@ -46,7 +46,7 @@ void SOS::onLoad()
 
     //Create debug renderer boolean. Debug renderer is called in HookViewportTick
     bEnableDebugRendering = std::make_shared<bool>(false);
-    cvarManager->registerCvar("sos_debugrender", "0", "Enables on-screen debug text for SOS", true).bindTo(bEnableDebugRendering);
+    //cvarManager->registerCvar("sos_debugrender", "0", "Enables on-screen debug text for SOS", true).bindTo(bEnableDebugRendering);
 
     //Check if there is a game currently active
     gameWrapper->SetTimeout([this](GameWrapper* gw)

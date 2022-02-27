@@ -51,16 +51,16 @@ private:
     // GOAL SCORED VARIABLES
     LastTouchInfo lastTouch;
     Vector2F GoalImpactLocation = {0,0}; // top-left (0,0) bottom right (1,1)
-	void GetGameStateInfo(CanvasWrapper canvas, json& state);
+	void GetGameStateInfo(json& state);
     Vector2F GetGoalImpactLocation(BallWrapper ball, void* params);
 
     // MAIN FUNCTION (GameState.cpp)
-    void UpdateGameState(CanvasWrapper canvas);
-    //void GetGameStateInfo(CanvasWrapper canvas, json& state);
+    void UpdateGameState();
+    //void GetGameStateInfo(json& state);
 
     // HOOKS (EventHooks.cpp)
     void HookAllEvents();
-    void HookViewportTick(CanvasWrapper canvas);
+    void HookViewportTick();
     void HookBallExplode();
     void HookOnHitGoal(BallWrapper ball, void* params);
     void HookInitTeams();
@@ -93,7 +93,7 @@ private:
     void GetWinnerInfo(json& state, ServerWrapper server);
     void GetArenaInfo(json& state);
     void GetCameraInfo(json& state);
-    void GetNameplateInfo(CanvasWrapper canvas);
+    void GetNameplateInfo();
     void GetLastTouchInfo(CarWrapper car, void* params);
     void GetStatEventInfo(ServerWrapper caller, void* params);
 
