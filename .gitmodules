@@ -1,0 +1,4 @@
+[submodule "modules/bclib"]
+	path = modules/bclib
+	url = git@github.com:bnylund/bclib.git
+	branch = main
