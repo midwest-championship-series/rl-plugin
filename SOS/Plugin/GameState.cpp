@@ -7,7 +7,7 @@
 
 using json = nlohmann::json;
 
-void SOS::UpdateGameState(CanvasWrapper canvas)
+void SOS::UpdateGameState()
 {
     //Initialize JSON objects
     json state;
@@ -19,10 +19,10 @@ void SOS::UpdateGameState(CanvasWrapper canvas)
     //Might want to change this to take MatchCreated into account?
     state["hasGame"] = true;
 
-    GetGameStateInfo(canvas, state);
+    GetGameStateInfo(state);
 }
 
-void SOS::GetGameStateInfo(CanvasWrapper canvas, json& state)
+void SOS::GetGameStateInfo(json& state)
 {
     using namespace std::chrono;
 
@@ -59,7 +59,7 @@ void SOS::GetGameStateInfo(CanvasWrapper canvas, json& state)
     //Previously: if((TimeSinceLastNameplatesCall * 1000) < 11.11f) for 90fps rate
     if(TimeSinceLastNameplatesCall >= ((*cvarUpdateRate * 0.5f) / 1000.f))
     {
-        GetNameplateInfo(canvas);
+        GetNameplateInfo();
 
         LastNameplatesCallTime = steady_clock::now();
     }
@@ -307,7 +307,7 @@ void SOS::GetCameraInfo(json& state)
     state["game"]["target"] = targetID;
 }
 
-void SOS::GetNameplateInfo(CanvasWrapper canvas)
+void SOS::GetNameplateInfo()
 {
     #ifdef USE_NAMEPLATES
     

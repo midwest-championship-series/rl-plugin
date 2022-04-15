@@ -17,6 +17,7 @@
 #pragma comment(lib, "libcurl.lib")
 #pragma comment(lib, "curlpp.lib")
 #include <windows.h>
+#include <shellapi.h>
 #include <Shlobj_core.h>
 #include <sstream>
 #include <memory>
@@ -70,7 +71,7 @@ public:
 
     void StopClient();
     
-    void SendEvent(std::string eventName, const json& jsawn);
+    void SendEvent(std::string eventName, const json& jsawn, bool force = false);
     void StartPrompt();
 
     void log(std::string text, bool console = false);
@@ -79,16 +80,15 @@ private:
 
     std::string curServer;
 
+    std::shared_ptr<bool> loggedIn;
     std::shared_ptr<std::string> server;
-    std::shared_ptr<std::string> token;
     std::shared_ptr<GameWrapper> gameWrapper;
     std::shared_ptr<CVarManagerWrapper> cvarManager;
     sio::client h;
 
     std::string getServer();
-    std::string getToken();
-    void setServer(std::string server);
-    void setToken(std::string token);
+    void setServer(std::string server);    
+    void Render(CanvasWrapper canvas);
 
     void AttemptLogin();
 };

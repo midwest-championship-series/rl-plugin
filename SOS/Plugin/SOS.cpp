@@ -9,7 +9,7 @@
     - Thanks to Martinn for the Stat Feed code (and inadvertently, demolitions)
 */
 
-BAKKESMOD_PLUGIN(SOS, "Simple Overlay System", SOS_VERSION, PERMISSION_ALL | PLUGINTYPE_THREADED)
+BAKKESMOD_PLUGIN(SOS, "Simple Overlay System", SOS_VERSION, PERMISSION_ALL | PLUGINTYPE_THREADED | PLUGINTYPE_THREADEDUNLOAD)
 
 std::shared_ptr<CVarManagerWrapper> globalCvarManager;
 
