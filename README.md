@@ -1,4 +1,6 @@
-# SOS.IO
+# SOS.IO, powered by BCLib++
+
+!NOTE! **This branch is currently on hold while fixes are being made to bclib itself.**
 
 This repository contains the original [SOS Plugin v1.6.0-beta6](https://gitlab.com/bakkesplugins/sos/sos-plugin) with extended functionality such as connection saving and prompt-based setup, along with Socket.IO implementation. An updater plugin is also contained in this repository. 
 
