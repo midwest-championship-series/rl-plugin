@@ -27,6 +27,15 @@ WebsocketManager::WebsocketManager(std::shared_ptr<CVarManagerWrapper> cvarManag
         StartPrompt();
     });
     gameWrapper->RegisterDrawable(std::bind(&WebsocketManager::Render, this, std::placeholders::_1));
+
+    lib = std::make_shared<BCLib>(/*BCLib("ROCKET_LEAGUE", "RL_Bakkesmod", [&, gameWrapper](std::string msg) {
+        // ERROR HERE
+        gameWrapper->Execute([&, msg](GameWrapper*) {
+            log(msg, true);
+        });
+    })*/);
+
+    lib->StartCBServer();
 }
 
 // If the file is valid, loadLine will load the first line into *out.
@@ -61,11 +70,8 @@ void WebsocketManager::StartPrompt() {
     TextInputModalWrapper server = gameWrapper->CreateTextInputModal("SOSIO");
     server.SetTextInput(getServer(), 50, false, [&](std::string input, bool canceled) {
         if (!canceled) {
-            if (h.opened()) {
-                *loggedIn = false;
-                cvarManager->log("[SOS-SocketIO] Closing previous connection");
-                h.sync_close();
-            }
+            lib->Disconnect();
+
             if(input.length() <= 11) {
                 StartPrompt();
                 return;
@@ -77,63 +83,7 @@ void WebsocketManager::StartPrompt() {
             }
 
             cvarManager->log("[SOS-SocketIO] new server: " + input);
-            h.clear_con_listeners();
-            h.clear_socket_listeners();
-            h.set_reconnect_delay(1000);
-            h.set_reconnect_delay_max(5000);
-            h.set_reconnect_attempts(2);
-            h.set_reconnecting_listener([&, input]() {
-                cvarManager->log("[SOS-SocketIO] Attempting to reconnect to '" + input + "'...");
-                *loggedIn = false;
-            });
-            h.set_fail_listener([&]() {
-                LOG("Socket failed");
-                gameWrapper->SetTimeout([&](GameWrapper*) {
-                    ModalWrapper failModal = gameWrapper->CreateModal("SOSIO");
-                    failModal.SetBody("Failed to connect.");
-                    failModal.SetIcon("gfx_shared.Icon_Disconnected");
-                    failModal.AddButton("OK", true);
-                    failModal.ShowModal();
-                    *loggedIn = false;
-                }, .0F);
-                cvarManager->log("[SOS-SocketIO] Failed to connect. Try reconnecting by resetting sos_server.");
-            });
-            h.set_open_listener([&, input]() {
-                *loggedIn = false;
-                gameWrapper->SetTimeout([&, input](GameWrapper* gW) {
-                    LOG("Socket connected");
-
-                    h.socket()->emit("login", sio::message::list("PLUGIN"), [&, input](const sio::message::list& list) {
-                        string res = list[0]->get_string();
-                        string site = input + res;
-                        LOG("RESPONSE: ", res);
-                        LOG("Total: ", site);
-
-                        // Open default browser
-                        ShellExecuteA(0, 0, site.c_str(), 0, 0, SW_SHOW);
-                    });
-
-                    h.socket()->on("logged_in", [&](const std::string& name,sio::message::ptr const& message,bool need_ack, sio::message::list& ack_message) {
-                        gameWrapper->SetTimeout([&](GameWrapper* gw) {
-                            *loggedIn = true;
-                            setServer(curServer);
-                            ModalWrapper successModal = gw->CreateModal("SOSIO");
-                            successModal.SetBody("Logged in!");
-                            successModal.AddButton("OK", true);
-                            successModal.ShowModal();
-                            h.set_reconnect_attempts(3600);
-                        }, .0F);
-                    });
-                }, .3F);
-            });
-            h.set_close_listener([&](int const& reason) {
-                *loggedIn = false;
-                LOG("Socket closed");
-                cvarManager->log("[SOS-SocketIO] Socket closed.");
-            });
-            cvarManager->log("[SOS-SocketIO] Attempting to connect to " + input);
-            h.connect(input);
-            curServer = input;
+            lib->Connect(input);
         }
     });
 #ifdef USE_TLS
@@ -147,7 +97,7 @@ void WebsocketManager::StartPrompt() {
 
 void WebsocketManager::Render(CanvasWrapper cw) {
     cw.SetPosition(Vector2F{ 30.0, 30.0 });
-    if(!h.opened()) {
+    if(true) {//!lib->Connected) {
         LinearColor colors;
         colors.R = 255;
         colors.G = 0;
@@ -179,31 +129,11 @@ void WebsocketManager::Render(CanvasWrapper cw) {
 
 void WebsocketManager::SendEvent(std::string eventName, const json &jsawn, bool force)
 {
-    json event;
-    event["event"] = eventName;
-    event["data"] = jsawn;
-    if(eventName == "game:update_state") {
-        event["game"] = "ROCKET_LEAGUE";
-    }
-
-    if (h.opened() && (force || (SOSUtils::ShouldRun(gameWrapper)))) {
-        h.socket()->emit("game event", event.dump());
-    }
+    lib->SendEvent(eventName, jsawn);
 }
 
 void WebsocketManager::StopClient() {
-    if(h.opened()) {
-        h.socket()->off_all();
-        h.clear_con_listeners();
-        h.clear_socket_listeners();
-        h.set_reconnect_attempts(0);
-        h.set_reconnect_delay(0);
-        cvarManager->log("sync_close()");
-        clock_t time_req = clock();
-        h.sync_close();
-        time_req = clock() - time_req;
-        cvarManager->log("post close ("+to_string(((float)time_req/CLOCKS_PER_SEC))+"s)");
-    }
+    lib->Stop();
 }
 
 void WebsocketManager::log(string text, bool console) {

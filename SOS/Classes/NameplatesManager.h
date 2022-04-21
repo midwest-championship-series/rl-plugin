@@ -1,5 +1,5 @@
 #pragma once
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 
 using nlohmann::json;

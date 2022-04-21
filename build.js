@@ -22,8 +22,16 @@ if(!path) {
 }
 
 console.log(`Using MSBuild located at ${path}`)
+console.log('Building bclib++...')
 
-execSync(`"${path}" -m /p:Configuration=Release /p:Platform=x64 /t:Rebuild /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal SOSIO.sln`, {
+execSync(`"${path}" /p:Configuration=Release${process.argv.length > 2 && process.argv[2] === 'tls' ? '-TLS' : ''} /p:Platform=x64 /t:Rebuild /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal bclib++.vcxproj`, {
+  cwd: [__dirname, 'modules', 'bclib', 'bclib++'].join('/'),
+  stdio: 'inherit'
+})
+
+console.log('Building plugin...')
+
+execSync(`"${path}" -m /p:Configuration=Release${process.argv.length > 2 && process.argv[2] === 'tls' ? '-TLS' : ''} /p:Platform=x64 /t:Rebuild /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal SOSIO.sln`, {
   cwd: __dirname,
   stdio: 'inherit'
 })

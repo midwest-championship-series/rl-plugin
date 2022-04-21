@@ -1,5 +1,4 @@
 #include "NameplatesManager.h"
-#include "json.hpp"
 #include "RenderingTools.h"
 #include "Plugin/MacrosStructsEnums.h"
 #include "Plugin/SOSUtils.h"

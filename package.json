@@ -5,6 +5,7 @@
   "author": "Benjamin Nylund <ben@nylund.us>",
   "scripts": {
     "build": "node build.js",
+    "build:tls": "node build.js tls",
     "install-tools": "node install.js"
   }
 }

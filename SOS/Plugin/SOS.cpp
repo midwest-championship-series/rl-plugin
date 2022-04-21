@@ -17,8 +17,6 @@ void SOS::onLoad()
 {
     globalCvarManager = cvarManager;
 
-    addrs = vector<DummyStatEventContainer>();
-
 #ifdef USE_TLS
     cvarManager->log("Loading SOS-SocketIO Plugin --- TLS ENABLED");
 #else
@@ -62,11 +60,9 @@ void SOS::onLoad()
     BallSpeed  = std::make_shared<BallSpeedManager>(gameWrapper);
     Clock      = std::make_shared<ClockManager>(gameWrapper, Websocket);
     Nameplates = std::make_shared<NameplatesManager>();
-    Replay = std::make_shared<ReplayManager>(cvarManager, gameWrapper, Websocket);
 }
 
 void SOS::onUnload()
 {
     Websocket->StopClient();
-    Replay->onUnload();
 }

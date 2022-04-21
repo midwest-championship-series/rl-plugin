@@ -1,6 +1,6 @@
 #include "SOS.h"
 #include "SOSUtils.h"
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 
 void SOS::HookAllEvents()
 {

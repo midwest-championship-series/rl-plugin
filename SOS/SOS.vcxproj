@@ -5,6 +5,10 @@
       <Configuration>Release-Nameplates</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-TLS|x64">
+      <Configuration>Release-TLS</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
@@ -20,6 +24,13 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-TLS|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -42,12 +53,20 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="BakkesMod.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-TLS|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="BakkesMod.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-Nameplates|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="BakkesMod.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-TLS|x64'">
     <LinkIncremental>false</LinkIncremental>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
@@ -62,9 +81,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;BAKKESTEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINDOWS;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_TYPE_TRAITS_;_WEBSOCKETPP_CPP11_STL_;_WEBSOCKETPP_CPP11_RANDOM_DEVICE_;_WEBSOCKETPP_CPP11_FUNCTIONAL_;_CRT_SECURE_NO_WARNINGS;NDEBUG;BAKKESTEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)sos-plugin-includes\RenderingTools;$(SolutionDir)sos-plugin-includes\nlohmann-JSON;$(BakkesModPath)\bakkesmodsdk\include;$(ProjectDir);$(SolutionDir)Libs\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules\RenderingTools;$(SolutionDir)modules\bclib\bclib++;$(SolutionDir)modules\bclib\lib\json\single_include;$(BakkesModPath)\bakkesmodsdk\include;$(ProjectDir);H:\RL\plugin\modules\bclib\lib\Simple-WebSocket-Server;H:\RL\plugin\modules\bclib\lib\socket.io-client-cpp\src;H:\RL\plugin\modules\bclib\lib\socket.io-client-cpp\lib\asio\asio\include;H:\RL\plugin\modules\bclib\lib\OpenSSL\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
@@ -74,10 +93,37 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(BakkesModPath)\bakkesmodsdk\lib;$(SolutionDir)Libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Uploader.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BakkesModPath)\bakkesmodsdk\lib;$(SolutionDir)modules\bclib\lib;$(SolutionDir)modules\bclib\lib\OpenSSL\lib\VC\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <LinkStatus>false</LinkStatus>
       <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>crypt32.lib;libssl64MT.lib;libcrypto64MT.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-TLS|x64'">
+    <ClCompile>
+      <DisabledWarnings>C4067,C4005</DisabledWarnings>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>USE_TLS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINDOWS;ASIO_STANDALONE;_WEBSOCKETPP_CPP11_TYPE_TRAITS_;_CRT_SECURE_NO_WARNINGS;NDEBUG;BAKKESTEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules\RenderingTools;$(SolutionDir)modules\bclib\bclib++;$(SolutionDir)modules\bclib\lib\json\single_include;$(BakkesModPath)\bakkesmodsdk\include;$(ProjectDir);H:\RL\plugin\modules\bclib\lib\Simple-WebSocket-Server;H:\RL\plugin\modules\bclib\lib\socket.io-client-cpp\src;H:\RL\plugin\modules\bclib\lib\socket.io-client-cpp\lib\asio\asio\include;H:\RL\plugin\modules\bclib\lib\OpenSSL\include</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(BakkesModPath)\bakkesmodsdk\lib;$(SolutionDir)modules\bclib\lib;$(SolutionDir)modules\bclib\lib\OpenSSL\lib\VC\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LinkStatus>false</LinkStatus>
+      <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>crypt32.lib;libssl64MT.lib;libcrypto64MT.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Nameplates|x64'">
@@ -90,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>USE_NAMEPLATES;NDEBUG;BAKKESTEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)sos-plugin-includes\RenderingTools;$(SolutionDir)sos-plugin-includes\nlohmann-JSON;$(SolutionDir)sos-plugin-includes\asio-1.12.2\include;$(SolutionDir)sos-plugin-includes\websocketpp-0.8.1;$(BakkesModPath)\bakkesmodsdk\include;$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)modules\RenderingTools;$(SolutionDir)modules\nlohmann-JSON;$(SolutionDir)modules\asio-1.12.2\include;$(SolutionDir)modules\websocketpp-0.8.1;$(BakkesModPath)\bakkesmodsdk\include;$(ProjectDir)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -104,29 +150,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Extra\CanvasExtensions.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Extra\RenderingAssistant.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Extra\RenderingMath.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Extra\WrapperStructsExtensions.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Chevron.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Circle.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Circle2D.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Cone.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Cube.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Cylinder.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Frustum.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Grid.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Line.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Matrix3.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Plane.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Sphere.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\Triangle.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\Objects\VisualCamera.h" />
-    <ClInclude Include="..\sos-plugin-includes\RenderingTools\RenderingTools.h" />
+    <ClInclude Include="..\modules\RenderingTools\Extra\CanvasExtensions.h" />
+    <ClInclude Include="..\modules\RenderingTools\Extra\RenderingAssistant.h" />
+    <ClInclude Include="..\modules\RenderingTools\Extra\RenderingMath.h" />
+    <ClInclude Include="..\modules\RenderingTools\Extra\WrapperStructsExtensions.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Chevron.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Circle.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Circle2D.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Cone.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Cube.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Cylinder.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Frustum.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Grid.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Line.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Matrix3.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Plane.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Sphere.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\Triangle.h" />
+    <ClInclude Include="..\modules\RenderingTools\Objects\VisualCamera.h" />
+    <ClInclude Include="..\modules\RenderingTools\RenderingTools.h" />
     <ClInclude Include="Classes\BallSpeedManager.h" />
     <ClInclude Include="Classes\ClockManager.h" />
     <ClInclude Include="Classes\NameplatesManager.h" />
-    <ClInclude Include="Classes\ReplayManager.h" />
     <ClInclude Include="Classes\Secrets.h" />
     <ClInclude Include="Classes\WebsocketManager.h" />
     <ClInclude Include="Plugin\MacrosStructsEnums.h" />
@@ -134,28 +179,27 @@
     <ClInclude Include="Plugin\SOSUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Extra\CanvasExtensions.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Extra\RenderingAssistant.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Extra\RenderingMath.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Extra\WrapperStructsExtensions.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Chevron.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Circle.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Circle2D.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Cone.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Cube.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Cylinder.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Frustum.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Grid.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Line.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Matrix3.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Plane.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Sphere.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\Triangle.cpp" />
-    <ClCompile Include="..\sos-plugin-includes\RenderingTools\Objects\VisualCamera.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Extra\CanvasExtensions.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Extra\RenderingAssistant.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Extra\RenderingMath.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Extra\WrapperStructsExtensions.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Chevron.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Circle.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Circle2D.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Cone.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Cube.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Cylinder.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Frustum.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Grid.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Line.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Matrix3.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Plane.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Sphere.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\Triangle.cpp" />
+    <ClCompile Include="..\modules\RenderingTools\Objects\VisualCamera.cpp" />
     <ClCompile Include="Classes\BallSpeedManager.cpp" />
     <ClCompile Include="Classes\ClockManager.cpp" />
     <ClCompile Include="Classes\NameplatesManager.cpp" />
-    <ClCompile Include="Classes\ReplayManager.cpp" />
     <ClCompile Include="Classes\WebsocketManager.cpp" />
     <ClCompile Include="Plugin\DebugRenderer.cpp" />
     <ClCompile Include="Plugin\EventHooks.cpp" />
