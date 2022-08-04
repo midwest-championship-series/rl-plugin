@@ -82,9 +82,6 @@
     <ClCompile Include="Plugin\SOSUtils.cpp">
       <Filter>Plugin Code\Support Files</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\ReplayManager.cpp">
-      <Filter>Plugin Code\Classes\Implementations</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sos-plugin-includes\RenderingTools\Extra\CanvasExtensions.h">
@@ -164,9 +161,6 @@
     </ClInclude>
     <ClInclude Include="Plugin\SOSUtils.h">
       <Filter>Plugin Code\Support Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\ReplayManager.h">
-      <Filter>Plugin Code\Classes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Secrets.h">
       <Filter>Plugin Code\Classes\Headers</Filter>

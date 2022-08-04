@@ -64,7 +64,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;BAKKESTEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)sos-plugin-includes\RenderingTools;$(SolutionDir)sos-plugin-includes\nlohmann-JSON;$(BakkesModPath)\bakkesmodsdk\include;$(ProjectDir);$(SolutionDir)Libs\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sos-plugin-includes\RenderingTools;$(SolutionDir)sos-plugin-includes\nlohmann-JSON;$(BakkesModPath)\bakkesmodsdk\include;$(ProjectDir);$(SolutionDir)Libs\include;$(SolutionDir)sos-plugin-includes\websocketpp-0.8.1;$(SolutionDir)sos-plugin-includes\asio-1.12.2\include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
@@ -75,7 +75,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(BakkesModPath)\bakkesmodsdk\lib;$(SolutionDir)Libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Uploader.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkStatus>false</LinkStatus>
       <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -126,7 +126,6 @@
     <ClInclude Include="Classes\BallSpeedManager.h" />
     <ClInclude Include="Classes\ClockManager.h" />
     <ClInclude Include="Classes\NameplatesManager.h" />
-    <ClInclude Include="Classes\ReplayManager.h" />
     <ClInclude Include="Classes\Secrets.h" />
     <ClInclude Include="Classes\WebsocketManager.h" />
     <ClInclude Include="Plugin\MacrosStructsEnums.h" />
@@ -155,7 +154,6 @@
     <ClCompile Include="Classes\BallSpeedManager.cpp" />
     <ClCompile Include="Classes\ClockManager.cpp" />
     <ClCompile Include="Classes\NameplatesManager.cpp" />
-    <ClCompile Include="Classes\ReplayManager.cpp" />
     <ClCompile Include="Classes\WebsocketManager.cpp" />
     <ClCompile Include="Plugin\DebugRenderer.cpp" />
     <ClCompile Include="Plugin\EventHooks.cpp" />

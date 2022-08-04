@@ -62,11 +62,14 @@ void SOS::onLoad()
     BallSpeed  = std::make_shared<BallSpeedManager>(gameWrapper);
     Clock      = std::make_shared<ClockManager>(gameWrapper, Websocket);
     Nameplates = std::make_shared<NameplatesManager>();
-    Replay = std::make_shared<ReplayManager>(cvarManager, gameWrapper, Websocket);
+    //Replay = std::make_shared<ReplayManager>(cvarManager, gameWrapper, Websocket);
+
+    Websocket->StartServer();
 }
 
 void SOS::onUnload()
 {
-    Websocket->StopClient();
-    Replay->onUnload();
+    Websocket->unloading = true;
+    Websocket->Destroy();
+   // Replay->onUnload();
 }

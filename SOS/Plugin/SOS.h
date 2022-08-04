@@ -5,12 +5,12 @@
 #include "Classes/NameplatesManager.h"
 #include "Classes/BallSpeedManager.h"
 #include "Classes/ClockManager.h"
-#include "Classes/ReplayManager.h"
+//#include "Classes/ReplayManager.h"
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "MacrosStructsEnums.h"
 #include "json.hpp"
 
-class ReplayManager;
+//class ReplayManager;
 using json = nlohmann::json;
 
 #define SOS_DATADIR gameWrapper->GetDataFolderW()
@@ -37,7 +37,7 @@ private:
     std::shared_ptr<NameplatesManager> Nameplates;
     std::shared_ptr<BallSpeedManager> BallSpeed;
     std::shared_ptr<ClockManager> Clock;
-    std::shared_ptr<ReplayManager> Replay;
+   // std::shared_ptr<ReplayManager> Replay;
 
     // ORIGINAL SOS VARIABLES
     bool firstCountdownHit = false;
