@@ -16,12 +16,9 @@ WebsocketManager::WebsocketManager(std::shared_ptr<CVarManagerWrapper> cvarManag
     cvarManager->registerCvar("sos_token", RELAY_PASSWORD, "Token for authentication").bindTo(token);
 #else
     string plServ = getServer();
-    string plToken = getToken();
     server = std::make_shared<std::string>(plServ);
-    token = std::make_shared<std::string>(plToken);
     loggedIn = std::make_shared<bool>(false);
     CVarWrapper cserver = cvarManager->registerCvar("sos_server", plServ, "Server to send events to", true);
-    cvarManager->registerCvar("sos_token", plToken, "Token for authentication").bindTo(token);
 #endif
     cserver.bindTo(server);
 
@@ -51,77 +48,14 @@ void loadLine(wstring filename, string* out) {
 
 string WebsocketManager::getServer() {
     string server = "";
-    loadLine(SOS_DATADIR + LR"(\sosio\server)", &server);
+    loadLine(SOS_DATADIR + LR"(\rocketcast\server)", &server);
     return server;
 }
 
-string WebsocketManager::getToken() {
-    string token = "";
-    loadLine(SOS_DATADIR + LR"(\sosio\token)", &token);
-    return token;
-}
-
 void WebsocketManager::setServer(string server) {
-    ofstream file(SOS_DATADIR + LR"(\sosio\server)", ios_base::trunc);
+    ofstream file(SOS_DATADIR + LR"(\rocketcast\server)", ios_base::trunc);
     file << server << endl;
     file.close();
-}
-
-void WebsocketManager::setToken(string token) {
-    ofstream file(SOS_DATADIR + LR"(\sosio\token)", ios_base::trunc);
-    file << token << endl;
-    file.close();
-}
-
-void WebsocketManager::AttemptLogin() {
-    *loggedIn = false;
-    TextInputModalWrapper tokenModal = gameWrapper->CreateTextInputModal("SOSIO");
-    tokenModal.SetTextInput(getToken(), 32, true, [&](std::string iToken, bool canceled) {
-
-        if (canceled) {
-            if (h.opened())
-                h.socket()->close();
-            *loggedIn = false;
-            return;
-        }
-
-        cvarManager->getCvar("sos_token").setValue(iToken);
-        cvarManager->log("[SOS-SocketIO] Attempting to log in...");
-        LOG("Logging in to SIO");
-        h.socket()->emit("login", iToken, [&](const sio::message::list& list) {
-            if (list[0]->get_string() == "good") {
-                LOG("Logged in");
-                *loggedIn = true;
-                gameWrapper->SetTimeout([&](GameWrapper* gw) {
-                    ModalWrapper successModal = gw->CreateModal("SOSIO");
-                    successModal.SetBody("Connected!");
-                    successModal.SetIcon("gfx_shared.Icon_ConnectionStrength4");
-                    successModal.AddButton("OK", true);
-                    successModal.ShowModal();
-                }, .0F);
-                cvarManager->log("[SOS-SocketIO] Login successful! Plugin ready!");
-                gameWrapper->Execute([&](GameWrapper* gw) {
-                    LOG("Setting server");
-                    setServer(curServer);
-                    string token = cvarManager->getCvar("sos_token").getStringValue();
-                    LOG("Setting token in AttemptLogin to " + token);
-                    setToken(token);
-                    LOG("Done");
-                    gw->Toast("SOSIO", "Websocket connected");
-                });
-            }
-            else {
-                *loggedIn = false;
-                gameWrapper->SetTimeout([&](GameWrapper*) {
-                    AttemptLogin();
-                }, .0F);
-                LOG("Login failed");
-                cvarManager->log("[SOS-SocketIO] Login failed!");
-            }
-            });
-        });
-    tokenModal.SetBody("Incorrect! Enter your auth token:");
-    tokenModal.ShowModal();
 }
 
 void WebsocketManager::StartServer()
@@ -176,7 +110,7 @@ void WebsocketManager::OnWsMsg(connection_hdl hdl, PluginServer::message_ptr msg
     if (out_message == "stop") {
         LOG("STOP [source: websocket]");
         ws_server->send(hdl, "STOPPING", websocketpp::frame::opcode::text);
-        cvarManager->executeCommand("plugin unload sosio");
+        cvarManager->executeCommand("plugin unload rocketcast");
     } else if (out_message == "disconnect") {
         LOG("DISCONNECT [source: websocket]");
         ws_server->send(hdl, "DISCONNECT", websocketpp::frame::opcode::text);
@@ -235,7 +169,7 @@ void WebsocketManager::OnWsOpen(websocketpp::connection_hdl hdl) {
 
 void WebsocketManager::StartPrompt() {
     // Server Address -> Connect -> Password -> Save?
-    TextInputModalWrapper server = gameWrapper->CreateTextInputModal("SOSIO");
+    TextInputModalWrapper server = gameWrapper->CreateTextInputModal("ROCKETCAST");
     server.SetTextInput(getServer(), 50, false, [&](std::string input, bool canceled) {
         if (!canceled) {
             Disconnect();
@@ -299,34 +233,19 @@ void WebsocketManager::Connect(const std::string& serv, const std::string& token
         *loggedIn = false;
         LOGC("Socket connected");
 
-        // If a token was passed into connect, use it to directly log in. Otherwise display website.
-        if (token.size() == 0) {
-            h.socket()->emit("login", sio::message::list("PLUGIN"), [&, serv](const sio::message::list& list) {
-                std::string res = list[0]->get_string();
-                std::string site = serv + res;
-                LOG("RESPONSE: " + res);
-                LOG("Total: " + site);
+        sio::message::list args = sio::message::list("PLUGIN");
 
-                // Open default browser
-                ShellExecuteA(0, 0, site.c_str(), 0, 0, SW_SHOW);
-            });
-        }
-        else {
-            sio::message::list args = sio::message::list(token);
-            args.push("PLUGIN");
-
-            // Use computer name as name for relay
-            char* comp_name = getenv("COMPUTERNAME");
-            LOG("Computer name: " + std::string(comp_name));
-            args.push(std::string(comp_name == 0 ? "RL_Bakkesmod" : comp_name));
-
-            h.socket()->emit("login:token", args);
-        }
+        // Use computer name as name for relay
+        char* comp_name = getenv("COMPUTERNAME");
+        LOG("Computer name: " + std::string(comp_name));
+        args.push(std::string(comp_name == 0 ? "RL_Bakkesmod" : comp_name));
 
         h.socket()->on("logged_in", [&](const std::string& name, sio::message::ptr const& message, bool need_ack, sio::message::list& ack_message) {
             *loggedIn = true;
             h.set_reconnect_attempts(3600);
         });
+
+        h.socket()->emit("login", args);
     });
     h.set_close_listener([&](int const& reason) {
         *loggedIn = false;
@@ -385,7 +304,7 @@ void WebsocketManager::Render(CanvasWrapper cw) {
 
 void WebsocketManager::log(string text, bool console) {
     if(!unloading) {
-        ofstream file(SOS_DATADIR + LR"(\sosio\log.txt)", ios_base::app);
+        ofstream file(SOS_DATADIR + LR"(\rocketcast\log.txt)", ios_base::app);
 
         time_t now = time(0);
         tm* ltm = localtime(&now);

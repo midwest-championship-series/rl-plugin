@@ -23,7 +23,7 @@ if(!path) {
 
 console.log(`Using MSBuild located at ${path}`)
 
-execSync(`"${path}" -m /p:Configuration=Release /p:Platform=x64 /t:Rebuild /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal SOSIO.sln`, {
+execSync(`"${path}" -m /p:Configuration=Release /p:Platform=x64 /t:Rebuild /clp:NoSummary;NoItemAndPropertyList;Verbosity=minimal Rocketcast.sln`, {
   cwd: __dirname,
   stdio: 'inherit'
 })

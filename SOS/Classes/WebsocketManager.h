@@ -2,7 +2,7 @@
 
 // Project Definitions
 
-#define USE_TLS
+//#define USE_TLS
 
 // Dependencies
 //#define CURLPP_STATICLIB
@@ -120,7 +120,6 @@ private:
 
     std::shared_ptr<bool> loggedIn;
     std::shared_ptr<std::string> server;
-    std::shared_ptr<std::string> token;
     std::shared_ptr<GameWrapper> gameWrapper;
     std::shared_ptr<CVarManagerWrapper> cvarManager;
     sio::client h;
@@ -129,12 +128,8 @@ private:
 
 
     std::string getServer();
-    std::string getToken();
     void setServer(std::string server);
-    void setToken(std::string token);
     void Render(CanvasWrapper canvas);
-
-    void AttemptLogin();
 
     std::vector<std::string> split(std::string s, std::string delimiter) {
         size_t pos_start = 0, pos_end, delim_len = delimiter.length();

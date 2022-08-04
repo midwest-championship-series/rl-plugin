@@ -9,7 +9,7 @@
     - Thanks to Martinn for the Stat Feed code (and inadvertently, demolitions)
 */
 
-BAKKESMOD_PLUGIN(SOS, "Simple Overlay System", SOS_VERSION, PERMISSION_ALL | PLUGINTYPE_THREADED | PLUGINTYPE_THREADEDUNLOAD)
+BAKKESMOD_PLUGIN(SOS, "Rocketcast Plugin", SOS_VERSION, PERMISSION_ALL | PLUGINTYPE_THREADED | PLUGINTYPE_THREADEDUNLOAD)
 
 std::shared_ptr<CVarManagerWrapper> globalCvarManager;
 
@@ -20,14 +20,14 @@ void SOS::onLoad()
     addrs = vector<DummyStatEventContainer>();
 
 #ifdef USE_TLS
-    cvarManager->log("Loading SOS-SocketIO Plugin --- TLS ENABLED");
+    cvarManager->log("Loading Rocketcast Plugin --- TLS ENABLED");
 #else
-    cvarManager->log("Loading SOS-SocketIO Plugin --- TLS DISABLED");
+    cvarManager->log("Loading Rocketcast Plugin --- TLS DISABLED");
 #endif
 
     //Enabled cvar
     cvarEnabled = std::make_shared<bool>(false);
-    CVarWrapper registeredEnabledCvar = cvarManager->registerCvar("sos_enabled", "1", "Enable SOSIO plugin", true, true, 0, true, 1);
+    CVarWrapper registeredEnabledCvar = cvarManager->registerCvar("rocketcast_enabled", "1", "Enable Rocketcast plugin", true, true, 0, true, 1);
     registeredEnabledCvar.bindTo(cvarEnabled);
     registeredEnabledCvar.addOnValueChanged([this](std::string cvarName, CVarWrapper newCvar)
     {
@@ -39,7 +39,7 @@ void SOS::onLoad()
     //Other cvars
     cvarPort = std::make_shared<int>(49122);
     cvarUpdateRate = std::make_shared<float>(25.0f);
-    cvarManager->registerCvar("sos_rate", "25", "Rate at which to send events to websocket (milliseconds)", true, true, 5.0f, true, 2000.0f).bindTo(cvarUpdateRate);
+    cvarManager->registerCvar("rocketcast_rate", "25", "Rate at which to send events to websocket (milliseconds)", true, true, 5.0f, true, 2000.0f).bindTo(cvarUpdateRate);
 
     //Handle all the event hooking (EventHooks.cpp)
     HookAllEvents();

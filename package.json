@@ -5,6 +5,12 @@
   "author": "Benjamin Nylund <ben@nylund.us>",
   "scripts": {
     "build": "node build.js",
-    "install-tools": "node install.js"
+    "install-tools": "node install.js",
+    "deploy": "yarn build && node --no-warnings --experimental-json-modules deploy.mjs"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1188.0",
+    "dotenv": "^16.0.1",
+    "file-type": "^17.1.6"
   }
 }
