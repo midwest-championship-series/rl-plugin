@@ -1,12 +1,15 @@
 {
   "name": "plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": "git@github.com:mn-rocket-league/rl-plugin.git",
   "author": "Benjamin Nylund <ben@nylund.us>",
   "scripts": {
     "build": "node build.js",
     "install-tools": "node install.js",
-    "deploy": "yarn build && node --no-warnings --experimental-json-modules deploy.mjs"
+    "deploy": "yarn build && node --no-warnings --experimental-json-modules deploy.mjs",
+    "bump": "yarn version --patch",
+    "bump:minor": "yarn version --minor",
+    "bump:major": "yarn version --major"
   },
   "dependencies": {
     "aws-sdk": "^2.1188.0",
